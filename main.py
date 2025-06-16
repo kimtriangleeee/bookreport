@@ -15,6 +15,8 @@ def home():
     st.title("독후감 기록장")
     if st.button("나의 독후감 쓰러가기"):
         st.session_state.page = "write"
+        st.experimental_rerun()
+        return
 
     if st.session_state.reviews:
         st.sidebar.header("정렬 기준")
@@ -31,16 +33,16 @@ def home():
         elif st.session_state.sort_option == "제목 가나다순":
             reviews.sort(key=lambda x: x["title"])
         elif st.session_state.sort_option == "문학 우선":
-            reviews.sort(key=lambda x: (x["category"] != "문학", x["date"]), reverse=False)
+            reviews.sort(key=lambda x: (x["category"] != "문학", x["date"]))
         elif st.session_state.sort_option == "비문학 우선":
-            reviews.sort(key=lambda x: (x["category"] != "비문학", x["date"]), reverse=False)
+            reviews.sort(key=lambda x: (x["category"] != "비문학", x["date"]))
 
         for r in reviews:
             st.markdown(f"### {r['title']}  ({r['category']})")
             st.markdown(f"**작가:** {r['author']}  \n**작성일:** {r['date'].strftime('%Y-%m-%d %H:%M:%S')}")
             st.markdown(f"> {r['review']}")
 
-    # 오른쪽 하단 + 버튼 (스타일로 위치 조정)
+    # 오른쪽 하단 + 버튼 스타일 (fixed position)
     st.markdown(
         """
         <style>
@@ -65,11 +67,13 @@ def home():
 
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
+        st.experimental_rerun()
+        return
 
 def write_review():
     st.title("독후감 작성하기")
 
-    # 디자인 - 책처럼 보이도록 CSS 적용 (간단히 박스 스타일링)
+    # 책 느낌 나도록 스타일링
     st.markdown(
         """
         <style>
@@ -90,7 +94,7 @@ def write_review():
         """, unsafe_allow_html=True)
 
     with st.form("review_form"):
-        title = st.text_input("책 제목", placeholder="책 제목을 입력하세요", key="title", help="두껍고 큰 글씨", label_visibility="visible")
+        title = st.text_input("책 제목", placeholder="책 제목을 입력하세요", key="title")
         author = st.text_input("작가", placeholder="작가명을 입력하세요", key="author")
         category = st.selectbox("책 분야", ["문학", "비문학"], key="category")
         review = st.text_area("독후감 작성", height=200, placeholder="독후감을 작성하세요...", key="review")
@@ -109,6 +113,7 @@ def write_review():
                 })
                 st.session_state.page = "home"
                 st.experimental_rerun()
+                return
 
 # 페이지 이동
 if st.session_state.page == "home":
