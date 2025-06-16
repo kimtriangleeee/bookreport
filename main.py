@@ -17,7 +17,7 @@ def home():
     if st.button("나의 독후감 쓰러가기"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return
+        return  # rerun 후 함수 종료 꼭 필요
 
     if st.session_state.reviews:
         st.sidebar.header("정렬 기준")
@@ -73,7 +73,7 @@ def home():
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return
+        return  # rerun 후 함수 종료 꼭 필요
 
 
 def write_review():
@@ -123,7 +123,7 @@ def write_review():
                 )
                 st.session_state.page = "home"
                 st.experimental_rerun()
-                return
+                return  # rerun 후 함수 종료 꼭 필요
 
 
 # 페이지 라우팅
