@@ -12,12 +12,22 @@ if "sort_option" not in st.session_state:
     st.session_state.sort_option = "날짜순"
 
 
-def home():
+    def home():
     st.title("독후감 기록장")
+
+    # 작은 글씨, 회색, 중앙 정렬로 "더블클릭하세요"
+    st.markdown(
+        "<p style='color:gray; text-align:center; font-size:12px; margin-top:-10px;'>더블클릭하세요</p>",
+        unsafe_allow_html=True,
+    )
+
     if st.button("나의 독후감 쓰러가기"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return  # rerun 후 함수 종료 꼭 필요
+        return
+
+    # ... 이하 동일 ...
+
 
     if st.session_state.reviews:
         st.sidebar.header("정렬 기준")
