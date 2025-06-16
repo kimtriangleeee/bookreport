@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 
-# 초기 데이터 저장용 리스트 (세션 상태 사용)
+# 세션 상태 초기화
 if "reviews" not in st.session_state:
     st.session_state.reviews = []
 
@@ -10,6 +10,7 @@ if "page" not in st.session_state:
 
 if "sort_option" not in st.session_state:
     st.session_state.sort_option = "날짜순"
+
 
 def home():
     st.title("독후감 기록장")
@@ -23,11 +24,11 @@ def home():
         st.session_state.sort_option = st.sidebar.selectbox(
             "정렬 기준 선택",
             ["날짜순", "제목 가나다순", "문학 우선", "비문학 우선"],
-            index=["날짜순", "제목 가나다순", "문학 우선", "비문학 우선"].index(st.session_state.sort_option)
+            index=["날짜순", "제목 가나다순", "문학 우선", "비문학 우선"].index(st.session_state.sort_option),
         )
         reviews = st.session_state.reviews.copy()
 
-        # 정렬 로직
+        # 정렬 처리
         if st.session_state.sort_option == "날짜순":
             reviews.sort(key=lambda x: x["date"], reverse=True)
         elif st.session_state.sort_option == "제목 가나다순":
@@ -39,10 +40,12 @@ def home():
 
         for r in reviews:
             st.markdown(f"### {r['title']}  ({r['category']})")
-            st.markdown(f"**작가:** {r['author']}  \n**작성일:** {r['date'].strftime('%Y-%m-%d %H:%M:%S')}")
+            st.markdown(
+                f"**작가:** {r['author']}  \n**작성일:** {r['date'].strftime('%Y-%m-%d %H:%M:%S')}"
+            )
             st.markdown(f"> {r['review']}")
 
-    # 오른쪽 하단 + 버튼 스타일 (fixed position)
+    # 오른쪽 하단 + 버튼 고정 스타일
     st.markdown(
         """
         <style>
@@ -63,17 +66,20 @@ def home():
             z-index: 100;
         }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
         st.experimental_rerun()
         return
 
+
 def write_review():
     st.title("독후감 작성하기")
 
-    # 책 느낌 나도록 스타일링
+    # 책 느낌 스타일
     st.markdown(
         """
         <style>
@@ -91,7 +97,9 @@ def write_review():
             margin-bottom: 10px;
         }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.form("review_form"):
         title = st.text_input("책 제목", placeholder="책 제목을 입력하세요", key="title")
@@ -104,18 +112,21 @@ def write_review():
             if not title.strip():
                 st.error("책 제목은 필수입니다!")
             else:
-                st.session_state.reviews.append({
-                    "title": title.strip(),
-                    "author": author.strip(),
-                    "category": category,
-                    "review": review.strip(),
-                    "date": datetime.now()
-                })
+                st.session_state.reviews.append(
+                    {
+                        "title": title.strip(),
+                        "author": author.strip(),
+                        "category": category,
+                        "review": review.strip(),
+                        "date": datetime.now(),
+                    }
+                )
                 st.session_state.page = "home"
                 st.experimental_rerun()
                 return
 
-# 페이지 이동
+
+# 페이지 라우팅
 if st.session_state.page == "home":
     home()
 elif st.session_state.page == "write":
