@@ -13,7 +13,7 @@ if "sort_option" not in st.session_state:
 
 
     def home():
-    st.title("독후감 기록장")
+        st.title("독후감 기록장")
 
     # 작은 글씨, 회색, 중앙 정렬로 "더블클릭하세요"
     st.markdown(
