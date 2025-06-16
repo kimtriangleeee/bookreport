@@ -12,7 +12,7 @@ if "sort_option" not in st.session_state:
     st.session_state.sort_option = "날짜순"
 
 
-    def home():
+def home():
     st.title("독후감 기록장")
 
     # 작은 글씨, 회색, 중앙 정렬로 "더블클릭하세요"
@@ -24,13 +24,7 @@ if "sort_option" not in st.session_state:
     if st.button("나의 독후감 쓰러가기"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return  # 여기 return은 함수 내부에 있어야 합니다!
-
-    # 이후 코드도 같은 레벨 들여쓰기 유지
-    # 예:
-    if st.session_state.reviews:
-        st.sidebar.header("정렬 기준")
-        # ... 나머지 코드 ...
+        return  # rerun 후 함수 종료 꼭 필요
 
     if st.session_state.reviews:
         st.sidebar.header("정렬 기준")
