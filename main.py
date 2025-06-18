@@ -24,7 +24,7 @@ def home():
     if st.button("나의 독후감 쓰러가기"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return  # rerun 후 함수 종료 꼭 필요
+        return
 
     if st.session_state.reviews:
         st.sidebar.header("정렬 기준")
@@ -45,12 +45,28 @@ def home():
         elif st.session_state.sort_option == "비문학 우선":
             reviews.sort(key=lambda x: (x["category"] != "비문학", x["date"]))
 
+        # 스타일 적용: 책 종이 느낌 박스 카드
         for r in reviews:
-            st.markdown(f"### {r['title']}  ({r['category']})")
             st.markdown(
-                f"**작가:** {r['author']}  \n**작성일:** {r['date'].strftime('%Y-%m-%d %H:%M:%S')}"
+                f"""
+                <div style="
+                    background-color: #fdf6e3;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    border-radius: 10px;
+                    border: 1px solid #e0d9c8;
+                    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+                    font-family: 'Georgia', serif;
+                ">
+                    <h3 style="margin-bottom:5px;">{r['title']} 
+                    <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
+                    <p style="margin: 5px 0;"><strong>작가:</strong> {r['author']}<br>
+                    <strong>작성일:</strong> {r['date'].strftime('%Y-%m-%d %H:%M:%S')}</p>
+                    <p style="white-space: pre-wrap;">{r['review']}</p>
+                </div>
+                """,
+                unsafe_allow_html=True
             )
-            st.markdown(f"> {r['review']}")
 
     # 오른쪽 하단 + 버튼 고정 스타일
     st.markdown(
@@ -80,7 +96,7 @@ def home():
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return  # rerun 후 함수 종료 꼭 필요
+        return
 
 
 def write_review():
@@ -130,7 +146,7 @@ def write_review():
                 )
                 st.session_state.page = "home"
                 st.experimental_rerun()
-                return  # rerun 후 함수 종료 꼭 필요
+                return
 
 
 # 페이지 라우팅
