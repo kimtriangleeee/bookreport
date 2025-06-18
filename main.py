@@ -17,6 +17,7 @@ if "edit_index" not in st.session_state:
 
 def home():
     st.title("독후감 기록장")
+
     st.markdown(
         "<p style='color:gray; text-align:center; font-size:12px; margin-top:-10px;'>더블클릭하세요</p>",
         unsafe_allow_html=True,
@@ -45,48 +46,55 @@ def home():
         elif st.session_state.sort_option == "비문학 우선":
             reviews.sort(key=lambda x: (x["category"] != "비문학", x["date"]))
 
-        # 각 리뷰를 카드 형식으로 보여주며, 클릭하면 수정 페이지로 이동
+        # 리뷰 카드 출력 (카드 자체를 버튼처럼 만들어 클릭 시 수정 페이지로 이동)
         for idx, r in enumerate(reviews):
             review_id = st.session_state.reviews.index(r)
-            with st.container():
-                button_clicked = st.button(
-                    label=f"{r['title']} - {r['author']} - {r['category']} - {r['date'].strftime('%Y-%m-%d %H:%M:%S')}",
-                    key=f"card_button_{idx}",
-                    help="클릭하면 수정할 수 있어요",
-                )
-                st.markdown(
-                    f"""
-                    <div style="
-                        background-color: #fdf6e3;
-                        padding: 20px;
-                        margin-bottom: 20px;
-                        border-radius: 10px;
-                        border: 1px solid #e0d9c8;
-                        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-                        font-family: 'Georgia', serif;
-                        cursor: pointer;
-                    ">
-                        <h3>{r['title']} <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
-                        <p><strong>작가:</strong> {r['author']}<br>
-                        <strong>작성일:</strong> {r['date'].strftime('%Y-%m-%d %H:%M:%S')}</p>
-                        <p style="white-space: pre-wrap;">{r['review']}</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if button_clicked:
+
+            card_html = f"""
+            <style>
+                .review-card {{
+                    background-color: #fdf6e3;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    border-radius: 10px;
+                    border: 1px solid #e0d9c8;
+                    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+                    font-family: 'Georgia', serif;
+                    text-align: left;
+                    width: 100%;
+                    white-space: normal;
+                }}
+                .review-card:hover {{
+                    background-color: #f5e9cb;
+                    cursor: pointer;
+                }}
+            </style>
+
+            <button class="review-card" type="submit" name="review_click" value="{review_id}">
+                <h3>{r['title']} <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
+                <p><strong>작가:</strong> {r['author']}<br>
+                <strong>작성일:</strong> {r['date'].strftime('%Y-%m-%d %H:%M:%S')}</p>
+                <p style="white-space: pre-wrap;">{r['review']}</p>
+            </button>
+            """
+
+            # HTML form 처리
+            with st.form(f"form_{idx}"):
+                st.markdown(card_html, unsafe_allow_html=True)
+                submitted = st.form_submit_button("")
+
+                if submitted:
                     st.session_state.page = "edit"
                     st.session_state.edit_index = review_id
                     st.experimental_rerun()
 
-    # 하단 + 버튼
+    # 오른쪽 하단 + 버튼
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
         st.experimental_rerun()
 
 
 def write_review(is_edit=False):
-    # 배경색 적용
     st.markdown(
         """
         <style>
@@ -142,7 +150,7 @@ def write_review(is_edit=False):
                 st.experimental_rerun()
 
 
-# 페이지 라우팅
+# 라우팅
 if st.session_state.page == "home":
     home()
 elif st.session_state.page == "write":
