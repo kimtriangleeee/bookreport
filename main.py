@@ -17,7 +17,6 @@ if "edit_index" not in st.session_state:
 
 def home():
     st.title("독후감 기록장")
-
     st.markdown(
         "<p style='color:gray; text-align:center; font-size:12px; margin-top:-10px;'>더블클릭하세요</p>",
         unsafe_allow_html=True,
@@ -46,56 +45,41 @@ def home():
         elif st.session_state.sort_option == "비문학 우선":
             reviews.sort(key=lambda x: (x["category"] != "비문학", x["date"]))
 
+        # 각 리뷰를 카드 형식으로 보여주며, 클릭하면 수정 페이지로 이동
         for idx, r in enumerate(reviews):
-            original_index = st.session_state.reviews.index(r)
-            if st.button(f"📖 {r['title']} ({r['category']})", key=f"review_button_{idx}"):
-                st.session_state.page = "edit"
-                st.session_state.edit_index = original_index
-                st.experimental_rerun()
-            st.markdown(
-                f"""
-                <div style="
-                    background-color: #fdf6e3;
-                    padding: 20px;
-                    margin-bottom: 20px;
-                    border-radius: 10px;
-                    border: 1px solid #e0d9c8;
-                    box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-                    font-family: 'Georgia', serif;
-                ">
-                    <h3>{r['title']} <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
-                    <p><strong>작가:</strong> {r['author']}<br>
-                    <strong>작성일:</strong> {r['date'].strftime('%Y-%m-%d %H:%M:%S')}</p>
-                    <p style="white-space: pre-wrap;">{r['review']}</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            review_id = st.session_state.reviews.index(r)
+            with st.container():
+                button_clicked = st.button(
+                    label=f"{r['title']} - {r['author']} - {r['category']} - {r['date'].strftime('%Y-%m-%d %H:%M:%S')}",
+                    key=f"card_button_{idx}",
+                    help="클릭하면 수정할 수 있어요",
+                )
+                st.markdown(
+                    f"""
+                    <div style="
+                        background-color: #fdf6e3;
+                        padding: 20px;
+                        margin-bottom: 20px;
+                        border-radius: 10px;
+                        border: 1px solid #e0d9c8;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+                        font-family: 'Georgia', serif;
+                        cursor: pointer;
+                    ">
+                        <h3>{r['title']} <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
+                        <p><strong>작가:</strong> {r['author']}<br>
+                        <strong>작성일:</strong> {r['date'].strftime('%Y-%m-%d %H:%M:%S')}</p>
+                        <p style="white-space: pre-wrap;">{r['review']}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if button_clicked:
+                    st.session_state.page = "edit"
+                    st.session_state.edit_index = review_id
+                    st.experimental_rerun()
 
-    st.markdown(
-        """
-        <style>
-        .fixed-bottom-right {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            font-size: 30px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            text-align: center;
-            line-height: 50px;
-            cursor: pointer;
-            box-shadow: 2px 2px 5px gray;
-            z-index: 100;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
+    # 하단 + 버튼
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
         st.experimental_rerun()
@@ -116,7 +100,6 @@ def write_review(is_edit=False):
 
     st.title("독후감 수정하기" if is_edit else "독후감 작성하기")
 
-    # 기존 값 로드
     title_default = ""
     author_default = ""
     category_default = "문학"
@@ -166,4 +149,3 @@ elif st.session_state.page == "write":
     write_review()
 elif st.session_state.page == "edit":
     write_review(is_edit=True)
-
