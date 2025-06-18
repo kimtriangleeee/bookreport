@@ -11,11 +11,13 @@ if "page" not in st.session_state:
 if "sort_option" not in st.session_state:
     st.session_state.sort_option = "날짜순"
 
+if "edit_index" not in st.session_state:
+    st.session_state.edit_index = None
+
 
 def home():
     st.title("독후감 기록장")
 
-    # 작은 글씨, 회색, 중앙 정렬로 "더블클릭하세요"
     st.markdown(
         "<p style='color:gray; text-align:center; font-size:12px; margin-top:-10px;'>더블클릭하세요</p>",
         unsafe_allow_html=True,
@@ -35,7 +37,6 @@ def home():
         )
         reviews = st.session_state.reviews.copy()
 
-        # 정렬 처리
         if st.session_state.sort_option == "날짜순":
             reviews.sort(key=lambda x: x["date"], reverse=True)
         elif st.session_state.sort_option == "제목 가나다순":
@@ -45,8 +46,12 @@ def home():
         elif st.session_state.sort_option == "비문학 우선":
             reviews.sort(key=lambda x: (x["category"] != "비문학", x["date"]))
 
-        # 스타일 적용: 책 종이 느낌 박스 카드
-        for r in reviews:
+        for idx, r in enumerate(reviews):
+            original_index = st.session_state.reviews.index(r)
+            if st.button(f"📖 {r['title']} ({r['category']})", key=f"review_button_{idx}"):
+                st.session_state.page = "edit"
+                st.session_state.edit_index = original_index
+                st.experimental_rerun()
             st.markdown(
                 f"""
                 <div style="
@@ -58,9 +63,8 @@ def home():
                     box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
                     font-family: 'Georgia', serif;
                 ">
-                    <h3 style="margin-bottom:5px;">{r['title']} 
-                    <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
-                    <p style="margin: 5px 0;"><strong>작가:</strong> {r['author']}<br>
+                    <h3>{r['title']} <span style='font-size:16px; color:gray;'>({r['category']})</span></h3>
+                    <p><strong>작가:</strong> {r['author']}<br>
                     <strong>작성일:</strong> {r['date'].strftime('%Y-%m-%d %H:%M:%S')}</p>
                     <p style="white-space: pre-wrap;">{r['review']}</p>
                 </div>
@@ -68,7 +72,6 @@ def home():
                 unsafe_allow_html=True
             )
 
-    # 오른쪽 하단 + 버튼 고정 스타일
     st.markdown(
         """
         <style>
@@ -96,57 +99,64 @@ def home():
     if st.button("+", key="fab_button"):
         st.session_state.page = "write"
         st.experimental_rerun()
-        return
 
 
-def write_review():
-    st.title("독후감 작성하기")
-
-    # 책 느낌 스타일
+def write_review(is_edit=False):
+    # 배경색 적용
     st.markdown(
         """
         <style>
-        .book-input {
-            border: 3px solid #5A5A5A;
-            border-radius: 10px;
-            padding: 15px;
-            background: linear-gradient(135deg, #f0e4d7, #c8b9a6);
-            font-family: 'Georgia', serif;
-            margin-bottom: 15px;
-        }
-        .big-bold {
-            font-weight: 700;
-            font-size: 2rem;
-            margin-bottom: 10px;
+        .main {
+            background-color: #fcf9f1;
         }
         </style>
         """,
-        unsafe_allow_html=True,
+        unsafe_allow_html=True
     )
 
+    st.title("독후감 수정하기" if is_edit else "독후감 작성하기")
+
+    # 기존 값 로드
+    title_default = ""
+    author_default = ""
+    category_default = "문학"
+    review_default = ""
+
+    if is_edit and st.session_state.edit_index is not None:
+        data = st.session_state.reviews[st.session_state.edit_index]
+        title_default = data["title"]
+        author_default = data["author"]
+        category_default = data["category"]
+        review_default = data["review"]
+
     with st.form("review_form"):
-        title = st.text_input("책 제목", placeholder="책 제목을 입력하세요", key="title")
-        author = st.text_input("작가", placeholder="작가명을 입력하세요", key="author")
-        category = st.selectbox("책 분야", ["문학", "비문학"], key="category")
-        review = st.text_area("독후감 작성", height=200, placeholder="독후감을 작성하세요...", key="review")
+        title = st.text_input("책 제목", value=title_default, key="title")
+        author = st.text_input("작가", value=author_default, key="author")
+        category = st.selectbox("책 분야", ["문학", "비문학"], index=0 if category_default == "문학" else 1)
+        review = st.text_area("독후감 작성", height=200, value=review_default, key="review")
         submitted = st.form_submit_button("완료")
 
         if submitted:
             if not title.strip():
                 st.error("책 제목은 필수입니다!")
             else:
-                st.session_state.reviews.append(
-                    {
-                        "title": title.strip(),
-                        "author": author.strip(),
-                        "category": category,
-                        "review": review.strip(),
-                        "date": datetime.now(),
-                    }
-                )
+                new_review = {
+                    "title": title.strip(),
+                    "author": author.strip(),
+                    "category": category,
+                    "review": review.strip(),
+                    "date": datetime.now(),
+                }
+
+                if is_edit:
+                    st.session_state.reviews[st.session_state.edit_index] = new_review
+                    st.success("독후감이 수정되었습니다!")
+                else:
+                    st.session_state.reviews.append(new_review)
+                    st.success("독후감이 저장되었습니다!")
+
                 st.session_state.page = "home"
                 st.experimental_rerun()
-                return
 
 
 # 페이지 라우팅
@@ -154,3 +164,6 @@ if st.session_state.page == "home":
     home()
 elif st.session_state.page == "write":
     write_review()
+elif st.session_state.page == "edit":
+    write_review(is_edit=True)
+
